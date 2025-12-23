@@ -2,6 +2,11 @@ name: Build PyPy3 Sandbox
 
 on:
   workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag (e.g., pypy3-sandbox-7.3.6). Leave empty to skip release.'
+        required: false
+        type: string
 
 jobs:
   build:
@@ -39,3 +44,27 @@ jobs:
           path: |
             pypy/goal/pypy3-c
             pypy/goal/libpypy3-c.so
+
+  release:
+    needs: build
+    if: inputs.release_tag != ''
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+
+      - name: Create tarballs
+        run: |
+          tar -czvf pypy3-sandbox-linux-amd64.tar.gz -C pypy3-sandbox-linux-amd64 .
+          tar -czvf pypy3-sandbox-linux-arm64.tar.gz -C pypy3-sandbox-linux-arm64 .
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.release_tag }}
+          name: ${{ inputs.release_tag }}
+          files: |
+            pypy3-sandbox-linux-amd64.tar.gz
+            pypy3-sandbox-linux-arm64.tar.gz
