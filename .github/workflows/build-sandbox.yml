@@ -1,0 +1,41 @@
+name: Build PyPy3 Sandbox
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build container image
+        run: |
+          docker build \
+            -t pypy-sandbox-builder \
+            .devcontainer/
+
+      - name: Run sandbox build
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace \
+            pypy-sandbox-builder \
+            bash scripts/build-sandbox.sh
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: pypy3-sandbox-linux-${{ matrix.arch }}
+          path: |
+            pypy/goal/pypy3-c
+            pypy/goal/libpypy3-c.so

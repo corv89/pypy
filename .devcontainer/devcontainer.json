@@ -1,0 +1,25 @@
+{
+    "name": "PyPy Sandbox Build",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": ".."
+    },
+    "workspaceFolder": "/workspace",
+    "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-vscode.cpptools"
+            ],
+            "settings": {
+                "python.defaultInterpreterPath": "/usr/local/bin/pypy2.7"
+            }
+        }
+    },
+    "postCreateCommand": "echo 'Container ready. Run scripts/build-sandbox.sh to build sandboxed PyPy3.'",
+    "remoteUser": "root",
+    "hostRequirements": {
+        "memory": "8gb"
+    }
+}
